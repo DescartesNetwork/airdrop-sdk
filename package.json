@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec \"yarn lint && ts-node\" src/index.ts",
+    "start": "nodemon --exec \"ts-node\" src/index.ts",
     "deploy": "node dist/index.js",
-    "lint": "eslint \"{src,test}/**/*.ts\"",
     "clean": "rm -rf dist",
     "prebuild": "yarn clean",
     "build": "tsc",
@@ -23,6 +22,10 @@
   },
   "homepage": "https://github.com/DescartesNetwork/airdrop-sdk#readme",
   "dependencies": {
-    "@sentre/utility": "^1.0.3"
+    "@sentre/senhub": "^3.0.46",
+    "@sentre/utility": "^1.0.3",
+    "@solana/web3.js": "^1.48.0",
+    "multiformats": "^9.7.0",
+    "web3.storage": "^4.3.0"
   }
 }
