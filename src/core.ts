@@ -1,5 +1,4 @@
 import { BN } from '@project-serum/anchor'
-import { CID } from 'multiformats'
 import { PublicKey } from '@solana/web3.js'
 import {
   AnchorWallet,
@@ -14,6 +13,7 @@ import {
 import { AirdropReceivedData, RecipientInfo, WrapDistributorData } from 'types'
 import { getCID, isRevoke, toUnitTime } from 'utils'
 import IPFS from 'ipfs'
+import { CID } from 'multiformats'
 
 export class Airdrop {
   private _utility: Utility
@@ -22,8 +22,9 @@ export class Airdrop {
   constructor(
     wallet: AnchorWallet,
     rpcEndpoint: string = DEFAULT_RPC_ENDPOINT,
+    programId: string = 'AKTU61s8NJ8zJATQiceREdhXbedRnKrd1BVgnCuxmD2F',
   ) {
-    this._utility = new Utility(wallet, rpcEndpoint)
+    this._utility = new Utility(wallet, rpcEndpoint, programId)
   }
 
   private createMerkleTree = (recipients: RecipientInfo[]): Buffer => {
@@ -59,7 +60,7 @@ export class Airdrop {
     return bulk
   }
 
-  private getMyAirdrop = (
+  private getAirdropByOwner = (
     walletAddress: string,
     recipients: Leaf[],
     distributor: WrapDistributorData,
@@ -135,36 +136,43 @@ export class Airdrop {
 
   /**
    * Get list airdrop received
-   * @param address The wallet address of the person receiving the token
+   * @param walletAddress The wallet address of the person receiving the token
    * @returns List airdrop received
    */
-  getAirdropsReceived = async ({
-    address,
+  getRedeemListByAddress = async ({
+    walletAddress,
   }: {
-    address: string
+    walletAddress: string
   }): Promise<AirdropReceivedData[]> => {
-    if (!isAddress(address)) throw new Error(`${address} Invalid address`)
+    if (!isAddress(walletAddress))
+      throw new Error(`${walletAddress} Invalid address`)
     const distributors = await this.getDistributors()
     let listAirdropReceived: AirdropReceivedData[] = []
     for (const distributor of distributors) {
-      const { authority, metadata } = distributor
-      if (authority.toBase58() !== address) continue
-
+      const { metadata } = distributor
       const merkleDistributor = await this.getMerkleData(metadata)
       const recipients = merkleDistributor.receipients
-
-      const myRecipient = this.getMyAirdrop(address, recipients, distributor)
+      console.log(recipients, 'recipients')
+      const myRecipient = this.getAirdropByOwner(
+        walletAddress,
+        recipients,
+        distributor,
+      )
       listAirdropReceived = listAirdropReceived.concat(myRecipient)
     }
     return listAirdropReceived
   }
 
   /**
-   * Get list airdrop received
-   * @param address The wallet address of the person sending the token
+   * Get list airdrop sent
+   * @param walletAddress The wallet address of the person sending the token
    * @returns List airdrop sent
    */
-  getAirdropsSent = async ({ walletAddress }: { walletAddress: string }) => {
+  getSentAirdropByAddress = async ({
+    walletAddress,
+  }: {
+    walletAddress: string
+  }) => {
     const distributors = await this.getDistributors()
     const listAirdropSent: WrapDistributorData[] = []
     for (const distributor of distributors) {
@@ -182,7 +190,7 @@ export class Airdrop {
    * @param feeOptions Fee (Optional)
    * @returns { tx, txId, dstAddress }
    */
-  claimToken = async ({
+  claim = async ({
     distributorAddress,
     walletAddress,
     feeOptions,
@@ -191,8 +199,8 @@ export class Airdrop {
     walletAddress: string
     feeOptions?: FeeOptions
   }) => {
-    const airdropsReceived = await this.getAirdropsReceived({
-      address: walletAddress,
+    const airdropsReceived = await this.getRedeemListByAddress({
+      walletAddress,
     })
     const distributors = await this.getDistributors()
 
@@ -235,7 +243,7 @@ export class Airdrop {
    * @param feeOptions Fee (Optional)
    * @returns { tx, txId, dstAddress }
    */
-  revokeToken = async ({
+  revoke = async ({
     distributorAddress,
     feeOptions,
   }: {

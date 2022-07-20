@@ -23,7 +23,7 @@
   "tsc-alias": {
     "resolveFullPaths": true
   },
-  "include": ["src"],
+  "include": ["src", "src/.corets"],
   "typedocOptions": {
     "entryPoints": ["./src/index.ts"],
     "out": "docs"
