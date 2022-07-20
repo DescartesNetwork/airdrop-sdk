@@ -22,7 +22,7 @@ export class Airdrop {
   constructor(
     wallet: AnchorWallet,
     rpcEndpoint: string = DEFAULT_RPC_ENDPOINT,
-    programId: string = 'AKTU61s8NJ8zJATQiceREdhXbedRnKrd1BVgnCuxmD2F',
+    programId: string = DEFAULT_RPC_ENDPOINT,
   ) {
     this._utility = new Utility(wallet, rpcEndpoint, programId)
   }
