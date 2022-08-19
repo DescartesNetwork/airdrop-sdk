@@ -99,7 +99,7 @@ export class Airdrop {
    * @param recipients Recipient information list.
    * @param tokenAddress Token address to be airdropped
    * @param endedAt Airdrop end time
-   * @param freeOption Fee (Optional)
+   * @param feeOption Fee (Optional)
    * @returns { tx, txId, distributorAddress }
    */
   initializeAirdrop = async ({
@@ -127,7 +127,7 @@ export class Airdrop {
         total: merkleDistributor.getTotal(),
         merkleRoot: merkleDistributor.deriveMerkleRoot(),
         metadata,
-        endedAt: endedAt / 1000,
+        endedAt: !endedAt ? 0 : endedAt / 1000,
         feeOptions,
       })
 
@@ -152,7 +152,6 @@ export class Airdrop {
       const { metadata } = distributor
       const merkleDistributor = await this.getMerkleData(metadata)
       const recipients = merkleDistributor.receipients
-      console.log(recipients, 'recipients')
       const myRecipient = this.getAirdropByOwner(
         walletAddress,
         recipients,
